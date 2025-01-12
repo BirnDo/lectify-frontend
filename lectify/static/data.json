@@ -1,0 +1,67 @@
+[
+	{
+		"id": 101,
+		"userid": "user_001",
+		"title": "Introduction to Quantum Mechanics",
+		"fileName": "Quantum_Mechanics_Lecture1.mp4",
+		"duration": "1h 30m",
+		"transcriptionQuality": "High",
+		"summaryType": "Comprehensive",
+		"createdAt": "2024-01-15",
+		"completed": true,
+		"summaryText": "This lecture introduces the fundamental principles of quantum mechanics, including wave-particle duality, the uncertainty principle, and Schrödinger's equation. It also explores applications in modern physics.",
+		"transcriptionText": "Full transcription of the lecture goes here..."
+	},
+	{
+		"id": 102,
+		"userid": "user_002",
+		"title": "Modern European History",
+		"fileName": "European_History_Lecture2.mp4",
+		"duration": "2h 00m",
+		"transcriptionQuality": "Standard",
+		"summaryType": "Detailed",
+		"createdAt": "2024-02-10",
+		"completed": true,
+		"summaryText": "An in-depth analysis of key events in modern European history, including the Industrial Revolution, World Wars, and the Cold War. The lecture discusses the socio-political impacts of these events.",
+		"transcriptionText": "Full transcription of the lecture goes here..."
+	},
+	{
+		"id": 103,
+		"userid": "user_001",
+		"title": "Advanced Organic Chemistry",
+		"fileName": "Organic_Chemistry_Lecture3.mp4",
+		"duration": "1h 45m",
+		"transcriptionQuality": "Basic",
+		"summaryType": "Brief",
+		"createdAt": "2024-03-05",
+		"completed": false,
+		"summaryText": "A brief overview of advanced topics in organic chemistry, focusing on reaction mechanisms and synthesis pathways.",
+		"transcriptionText": ""
+	},
+	{
+		"id": 104,
+		"userid": "user_003",
+		"title": "Introduction to Machine Learning",
+		"fileName": "Machine_Learning_Lecture4.mp4",
+		"duration": "2h 15m",
+		"transcriptionQuality": "High",
+		"summaryType": "Comprehensive",
+		"createdAt": "2024-04-20",
+		"completed": true,
+		"summaryText": "Comprehensive coverage of machine learning algorithms, including supervised and unsupervised learning, neural networks, and deep learning techniques.",
+		"transcriptionText": "Full transcription of the lecture goes here..."
+	},
+	{
+		"id": 105,
+		"userid": "user_002",
+		"title": "Philosophy of Mind",
+		"fileName": "Philosophy_Mind_Lecture5.mp4",
+		"duration": "1h 50m",
+		"transcriptionQuality": "Standard",
+		"summaryType": "Detailed",
+		"createdAt": "2024-05-18",
+		"completed": true,
+		"summaryText": "Detailed exploration of the philosophy of mind, addressing topics such as consciousness, intentionality, and the mind-body problem.",
+		"transcriptionText": "Full transcription of the lecture goes here..."
+	}
+]
