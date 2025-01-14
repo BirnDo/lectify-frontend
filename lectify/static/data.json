@@ -28,15 +28,12 @@
 	{
 		"id": 103,
 		"userid": "user_001",
-		"title": "Advanced Organic Chemistry",
 		"fileName": "Organic_Chemistry_Lecture3.mp4",
 		"duration": "1h 45m",
 		"transcriptionQuality": "Basic",
 		"summaryType": "Brief",
 		"createdAt": "2024-03-05",
-		"completed": false,
-		"summaryText": "A brief overview of advanced topics in organic chemistry, focusing on reaction mechanisms and synthesis pathways.",
-		"transcriptionText": ""
+		"completed": false
 	},
 	{
 		"id": 104,

@@ -18,6 +18,7 @@
     "@sveltejs/kit": "^2.0.0",
     "@sveltejs/vite-plugin-svelte": "^3.0.0",
     "@types/eslint": "^9.6.0",
+    "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "22.9.0",
     "autoprefixer": "10.4.20",
     "eslint": "^9.0.0",
@@ -37,6 +38,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@iconify/svelte": "^4.0.2"
+    "@iconify/svelte": "^4.0.2",
+    "jsonwebtoken": "^9.0.2"
   }
 }
