@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lectify-frontend
+  labels:
+    app: lectify
+    use: frontend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: lectify
+      use: frontend
+  strategy: 
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: 1
+          maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: lectify
+        use: frontend
+    spec:
+      containers:
+        - name: lectify-frontend
+          image: lectifycr.azurecr.io/lectify-frontend:751ba86685090e22ab85d070ca724bc06a098e70
+          ports:
+            - containerPort: 80
+          securityContext:
+            runAsUser: 1000
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "125m"
+            limits:
+              memory: "1Gi"
+              cpu: "250m"
+          readinessProbe:
+            exec:
+              command:
+              - ls
+            initialDelaySeconds: 30
+            periodSeconds: 30
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: lectify-frontend-service
+spec:
+  selector:
+    app: lectify
+    use: backend
+  ports:
+    - port: 80
+  type: LoadBalancer
