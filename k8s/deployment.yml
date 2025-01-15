@@ -6,7 +6,7 @@ metadata:
     app: lectify
     use: frontend
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
       app: lectify
@@ -26,7 +26,7 @@ spec:
         - name: lectify-frontend
           image: lectifycr.azurecr.io/lectify-frontend:751ba86685090e22ab85d070ca724bc06a098e70
           ports:
-            - containerPort: 80
+            - containerPort: 4173
           securityContext:
             runAsUser: 1000
           resources:
@@ -55,4 +55,5 @@ spec:
     use: frontend
   ports:
     - port: 80
+      targetPort: 4173
   type: LoadBalancer
