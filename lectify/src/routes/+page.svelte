@@ -81,7 +81,7 @@
 		{/if}
 
 		<fieldset class="space-y-2 flex">
-			<legend class="mx-auto font-semibold">Transcription Quality</legend>
+			<legend class="text-center font-semibold">Transcription Quality</legend>
 			<RadioGroup class="mx-auto w-80">
 				<RadioItem bind:group={transcriptionQuality} name="quality" value={0}>Basic</RadioItem>
 				<RadioItem default bind:group={transcriptionQuality} name="quality" value={1}
