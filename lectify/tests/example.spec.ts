@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('has correct app bar', async ({ page }) => {
-  await page.goto('http://localhost:4173');
+  await page.goto('/');
 
   await expect(page.getByTestId('app-bar')).toBeVisible();
   await expect(page.getByText('Lectify')).toHaveRole('button');
@@ -9,7 +9,7 @@ test('has correct app bar', async ({ page }) => {
 });
 
 test('has correct headings', async ({ page }) => {
-  await page.goto('http://localhost:4173');
+  await page.goto('/');
 
   await expect(page.getByText('Convert lecture to summary')).toHaveRole('heading');
   await expect(page.getByText('Transcription Quality')).toBeVisible();
@@ -17,7 +17,7 @@ test('has correct headings', async ({ page }) => {
 });
 
 test('has correct form fields', async ({ page }) => {
-  await page.goto('http://localhost:4173');
+  await page.goto('/');
 
   await expect(page.getByTestId('file-dropzone')).toBeVisible();
   await expect(page.getByTestId('radio-group')).toHaveCount(2);
