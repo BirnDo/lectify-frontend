@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { getToastStore, Toast, type ToastSettings } from '@skeletonlabs/skeleton';
+	const API_ENDPOINT = import.meta.env.VITE_API_ENDPOINT;
 
 	const toastStore = getToastStore();
 
@@ -17,8 +18,19 @@
 			if (part) return part.split(';').shift();
 		}
 	};
+	const setCookie = (name: string, value: string, days: number) => {
+		const date = new Date();
+		date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+		const expires = `expires=${date.toUTCString()}`;
+		document.cookie = `${name}=${value};${expires};path=/`;
+	};
+
+	const deleteCookie = (name: string) => {
+		document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+	};
+
 	const token = getCookie('token');
-	console.log(token);
+	if (token) loggedIn = true;
 
 	async function handleLogin(event: Event) {
 		event.preventDefault();
@@ -30,26 +42,23 @@
 			} as ToastSettings);
 			return;
 		}
-		const jwt = 'your-jwt-token';
-		document.cookie = `token=${jwt}; path=/; SameSite=Strict; Secure;`;
 		loading = true;
 		error = '';
 
 		try {
-			const response = await fetch('https://your-flask-backend.com/api/login', {
+			const response = await fetch(API_ENDPOINT + '/login', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify({ username, password }),
-				credentials: 'include' // Include cookies in the request
+				body: JSON.stringify({ username: username, password: password })
 			});
 
 			const data = await response.json();
 
 			if (response.ok) {
 				console.log(data);
-				document.cookie = `token=${data.jwt}; path=/; SameSite=Strict; Secure;`;
+				document.cookie = `token=${data.token}; path=/; SameSite=Strict; Secure;`;
 				loggedIn = true;
 				toastStore.trigger({
 					message: 'Login successful!',
@@ -76,6 +85,15 @@
 			loading = false;
 		}
 	}
+	function handleLogout() {
+		deleteCookie('token');
+		loggedIn = false;
+		toastStore.trigger({
+			message: 'Logout successful!',
+			timeout: 3000,
+			background: 'variant-filled-success'
+		} as ToastSettings);
+	}
 </script>
 
 <div class="container mx-auto p-6 space-y-6">
@@ -84,7 +102,7 @@
 		{#if loggedIn}
 			<div class="text-center">
 				<h2 class="text-xl font-semibold">You are logged in!</h2>
-				<button class="btn variant-filled px-6 py-2" on:click={() => (loggedIn = false)}>
+				<button class="btn variant-filled px-6 py-2 mt-4" on:click={() => handleLogout()}>
 					Logout
 				</button>
 			</div>
