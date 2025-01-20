@@ -1,6 +1,67 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import type { Summary } from '../../models/Summary.js';
+	const API_ENDPOINT = import.meta.env.VITE_API_ENDPOINT;
+
 	export let data;
-	console.log(data.token);
+	const getCookie = (name: string) => {
+		const value = `; ${document.cookie}`;
+		const parts = value.split(`; ${name}=`);
+		if (parts.length === 2) {
+			const part = parts.pop();
+			if (part) return part.split(';').shift();
+		}
+	};
+	onMount(async () => {
+		data.token = getCookie('token');
+		console.log('Token:', data.token);
+		data.summaries = await fetchSummaries();
+	});
+	function mapTranscriptionQuality(quality: string): string {
+		switch (quality) {
+			case 'tiny':
+				return 'Basic';
+			case 'small':
+				return 'Standard';
+			case 'large':
+				return 'High';
+			default:
+				return 'Unknown';
+		}
+	}
+
+	async function fetchSummaries() {
+		try {
+			const response = await fetch(API_ENDPOINT + '/history', {
+				method: 'GET',
+				headers: {
+					Authorization: `Bearer ${data.token}`
+				}
+			});
+			const summaries: Summary[] = await response.json();
+			console.log('Fetched summary:', summaries);
+			summaries.forEach(
+				(summary) =>
+					(summary.transcriptionQuality = mapTranscriptionQuality(summary.transcriptionQuality))
+			);
+
+			return summaries;
+		} catch (error) {
+			console.error('Failed to fetch summary:', error);
+			return null;
+		}
+	}
+
+	function formatDuration(seconds: number): string {
+		const minutes = Math.floor(seconds / 60);
+		const remainingSeconds = Math.floor(seconds % 60);
+		if (minutes > 0) {
+			return `${minutes}m ${remainingSeconds}s`;
+		} else {
+			return `${remainingSeconds}s`;
+		}
+	}
+	console.log(data.summaries);
 </script>
 
 <div class="container mx-auto p-6">
@@ -29,7 +90,9 @@
 								{:else}
 									<span class="break-all">{summary.fileName}</span>{/if}
 							</h2>
-							<p class="text-gray-600 break-all">{summary.fileName} • {summary.duration}</p>
+							<p class="text-gray-600 break-all">
+								{summary.fileName} • {formatDuration(summary.duration)}
+							</p>
 							<p class="text-gray-500 text-sm">
 								Created on {new Date(summary.createdAt).toLocaleDateString()}
 							</p>
@@ -48,7 +111,7 @@
 						<!-- Footer -->
 						<footer class="mt-6">
 							<div class="flex justify-between">
-								<a href={`/summary/${summary.id}`} class="btn variant-filled px-4 py-2">
+								<a href={`/summary/${summary._id}`} class="btn variant-filled px-4 py-2">
 									{#if summary.completed}View Summary
 									{:else}
 										Check Progress

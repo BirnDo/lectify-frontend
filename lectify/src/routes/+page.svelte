@@ -7,14 +7,31 @@
 		Toast,
 		type ToastSettings
 	} from '@skeletonlabs/skeleton';
+	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
+	const API_ENDPOINT = import.meta.env.VITE_API_ENDPOINT;
 
 	const toastStore = getToastStore();
 
-	let files: File[] = [];
-	let transcriptionQuality: number = 1;
-	let summaryType: number = 0;
+	let loading: boolean = false;
+	let token: any = null;
 
-	function handleSubmit(event: Event) {
+	let files: File[] = [];
+	let transcriptionQuality: string = 'small';
+	let summaryType: string = 'Brief';
+	const getCookie = (name: string) => {
+		const value = `; ${document.cookie}`;
+		const parts = value.split(`; ${name}=`);
+		if (parts.length === 2) {
+			const part = parts.pop();
+			if (part) return part.split(';').shift();
+		}
+	};
+	onMount(() => {
+		token = getCookie('token');
+	});
+	async function handleSubmit(event: Event) {
+		loading = true;
 		event.preventDefault();
 		if (!files || files.length === 0) {
 			const t: ToastSettings = {
@@ -23,7 +40,25 @@
 				background: 'variant-filled-error'
 			};
 			toastStore.trigger(t);
-		} else console.log(files);
+		} else {
+			console.log(files);
+			const response = await fetch(
+				API_ENDPOINT +
+					`/process?fileName=${files[0].name}&title=${files[0].name}&model=${transcriptionQuality}&summaryType=${summaryType}`,
+				{
+					method: 'POST',
+					headers: {
+						'Content-Type': 'bi',
+						Authorization: `Bearer ${token}`
+					},
+					body: await files[0]
+				}
+			);
+			const data = await response.json();
+			console.log(data);
+			loading = false;
+			goto(`/summary/${data._id}`, { replaceState: true });
+		}
 	}
 
 	function removeFile(index: number) {
@@ -83,20 +118,24 @@
 		<fieldset class="space-y-2 flex">
 			<legend class="text-center font-semibold">Transcription Quality</legend>
 			<RadioGroup class="mx-auto w-80">
-				<RadioItem bind:group={transcriptionQuality} name="quality" value={0}>Basic</RadioItem>
-				<RadioItem default bind:group={transcriptionQuality} name="quality" value={1}
+				<RadioItem bind:group={transcriptionQuality} name="quality" value={'tiny'}>Basic</RadioItem>
+				<RadioItem default bind:group={transcriptionQuality} name="quality" value={'small'}
 					>Standard</RadioItem
 				>
-				<RadioItem bind:group={transcriptionQuality} name="quality" value={2}>High</RadioItem>
+				<RadioItem bind:group={transcriptionQuality} name="quality" value={'large'}>High</RadioItem>
 			</RadioGroup>
 		</fieldset>
 
 		<fieldset class="space-y-2 flex">
 			<legend class="text-center font-semibold">Summary Type</legend>
 			<RadioGroup class="mx-auto w-80">
-				<RadioItem bind:group={summaryType} name="summary" value={0}>Brief</RadioItem>
-				<RadioItem default bind:group={summaryType} name="summary" value={1}>Detailed</RadioItem>
-				<RadioItem bind:group={summaryType} name="summary" value={2}>Comprehensive</RadioItem>
+				<RadioItem bind:group={summaryType} name="summary" value={'Brief'}>Brief</RadioItem>
+				<RadioItem default bind:group={summaryType} name="summary" value={'Detailed'}
+					>Detailed</RadioItem
+				>
+				<RadioItem bind:group={summaryType} name="summary" value={'Comprehensive'}
+					>Comprehensive</RadioItem
+				>
 			</RadioGroup>
 		</fieldset>
 		<div class="flex">

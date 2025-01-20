@@ -2,20 +2,53 @@
 	import { clipboard, getToastStore, Toast, Modal, getModalStore } from '@skeletonlabs/skeleton';
 	import type { ModalSettings, ToastSettings } from '@skeletonlabs/skeleton';
 	import { onDestroy, onMount } from 'svelte';
-	import { goto } from '$app/navigation';
 	import type { Summary } from '../../../models/Summary';
+	const API_ENDPOINT = import.meta.env.VITE_API_ENDPOINT;
 
 	const toastStore = getToastStore();
 	const modalStore = getModalStore();
 
 	export let data;
 	let interval: NodeJS.Timeout;
+	let token: any = null;
+
+	const getCookie = (name: string) => {
+		const value = `; ${document.cookie}`;
+		const parts = value.split(`; ${name}=`);
+		if (parts.length === 2) {
+			const part = parts.pop();
+			if (part) return part.split(';').shift();
+		}
+	};
+	onMount(() => {
+		token = getCookie('token');
+	});
+
+	function mapTranscriptionQuality(quality: string): string {
+		switch (quality) {
+			case 'tiny':
+				return 'Basic';
+			case 'small':
+				return 'Standard';
+			case 'large':
+				return 'High';
+			default:
+				return 'Unknown';
+		}
+	}
 	async function fetchSummary() {
 		try {
-			const response = await fetch('/data.json');
-			if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-			const summaries = await response.json();
-			const summary = summaries.find((summary: Summary) => summary.id === data.summary?.id);
+			const response = await fetch(API_ENDPOINT + '/entry?_id=' + data.id, {
+				method: 'GET',
+				headers: {
+					Authorization: `Bearer ${token}`
+				}
+			});
+			const summary: Summary = await response.json();
+
+			console.log('Fetched summary:', summary);
+			summary.transcriptionQuality = mapTranscriptionQuality(summary.transcriptionQuality);
+
 			return summary;
 		} catch (error) {
 			console.error('Failed to fetch summary:', error);
@@ -23,14 +56,14 @@
 		}
 	}
 
-	onMount(() => {
+	onMount(async () => {
+		data.summary = await fetchSummary();
 		if (!data.summary?.completed) {
 			interval = setInterval(async () => {
 				const updatedSummary = await fetchSummary();
 				if (updatedSummary?.completed) {
 					data.summary = updatedSummary;
 					clearInterval(interval);
-					goto(`/summary/${data.summary?.id}`, { replaceState: true });
 				}
 				console.log('Polling for updated summary...');
 			}, 5000);
@@ -67,6 +100,16 @@
 		};
 		modalStore.trigger(m);
 	}
+
+	function formatDuration(seconds: number): string {
+		const minutes = Math.floor(seconds / 60);
+		const remainingSeconds = Math.floor(seconds % 60);
+		if (minutes > 0) {
+			return `${minutes}m ${remainingSeconds}s`;
+		} else {
+			return `${remainingSeconds}s`;
+		}
+	}
 </script>
 
 <div class="container mx-auto p-6 flex flex-col">
@@ -95,7 +138,9 @@
 					{:else}
 						<span class="break-all">{data.summary.fileName}</span>{/if}
 				</h1>
-				<p class="text-gray-600 break-all">{data.summary.fileName} • {data.summary.duration}</p>
+				<p class="text-gray-600 break-all">
+					{data.summary.fileName} • {formatDuration(data.summary.duration)}
+				</p>
 				<p class="text-gray-500 text-sm">
 					Created on {new Date(data.summary.createdAt).toLocaleDateString()}
 				</p>
