@@ -13,8 +13,7 @@ FROM node:20-alpine3.16
 
 WORKDIR /app
 # Copy the build files from the previous stage
-COPY --chown=1000:1000 --from=build /lectify . 
-RUN chmod -R 700 ../app
+COPY --from=build /lectify . 
 
 ENV HOST=0.0.0.0
 EXPOSE 4173
