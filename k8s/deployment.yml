@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
         - name: lectify-frontend
-          image: lectifycr.azurecr.io/lectify-frontend:751ba86685090e22ab85d070ca724bc06a098e70
+          image: lectifycr.azurecr.io/lectify-frontend-dev:b52115630eab176ee703a7f53eaf9478c5324c8f
           ports:
             - containerPort: 4173
           securityContext:
@@ -39,9 +39,16 @@ spec:
           readinessProbe:
             exec:
               command:
-              - ls
+              - curl
+              - http://localhost:4173
             initialDelaySeconds: 30
             periodSeconds: 30
+          env:
+            - name: VITE_API_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: frontend-secrets
+                  key: api-endpoint
 
 ---
 
@@ -57,3 +64,11 @@ spec:
     - port: 80
       targetPort: 4173
   type: LoadBalancer
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: frontend-secrets
+data:
+  api-endpoint: changeme
