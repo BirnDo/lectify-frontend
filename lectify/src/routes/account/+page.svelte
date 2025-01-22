@@ -58,7 +58,7 @@
 
 			if (response.ok) {
 				console.log(data);
-				document.cookie = `token=${data.token}; path=/; SameSite=Strict; Secure;`;
+				document.cookie = `token=${data.token}; path=/; SameSite=Strict;`;
 				loggedIn = true;
 				toastStore.trigger({
 					message: 'Login successful!',
