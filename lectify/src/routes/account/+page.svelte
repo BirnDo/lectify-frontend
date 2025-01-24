@@ -1,36 +1,16 @@
 <script lang="ts">
 	import { getToastStore, Toast, type ToastSettings } from '@skeletonlabs/skeleton';
 	const API_ENDPOINT = import.meta.env.VITE_API_ENDPOINT;
+	export let data;
 
 	const toastStore = getToastStore();
 
 	let username: string = '';
 	let password: string = '';
 	let loading: boolean = false;
-	let loggedIn: boolean = false;
 	let error: string = '';
-
-	const getCookie = (name: string) => {
-		const value = `; ${document.cookie}`;
-		const parts = value.split(`; ${name}=`);
-		if (parts.length === 2) {
-			const part = parts.pop();
-			if (part) return part.split(';').shift();
-		}
-	};
-	const setCookie = (name: string, value: string, days: number) => {
-		const date = new Date();
-		date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-		const expires = `expires=${date.toUTCString()}`;
-		document.cookie = `${name}=${value};${expires};path=/`;
-	};
-
-	const deleteCookie = (name: string) => {
-		document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-	};
-
-	const token = getCookie('token');
-	if (token) loggedIn = true;
+	let loggedIn = false;
+	if (data.token) loggedIn = true;
 
 	async function handleLogin(event: Event) {
 		event.preventDefault();
@@ -51,6 +31,7 @@
 				headers: {
 					'Content-Type': 'application/json'
 				},
+				credentials: 'include',
 				body: JSON.stringify({ username: username, password: password })
 			});
 
@@ -58,7 +39,6 @@
 
 			if (response.ok) {
 				console.log(data);
-				document.cookie = `token=${data.token}; path=/; SameSite=Strict;`;
 				loggedIn = true;
 				toastStore.trigger({
 					message: 'Login successful!',
@@ -85,14 +65,29 @@
 			loading = false;
 		}
 	}
-	function handleLogout() {
-		deleteCookie('token');
-		loggedIn = false;
-		toastStore.trigger({
-			message: 'Logout successful!',
-			timeout: 3000,
-			background: 'variant-filled-success'
-		} as ToastSettings);
+	async function handleLogout() {
+		const response = await fetch(API_ENDPOINT + '/logout', {
+			method: 'POST',
+			credentials: 'include'
+		});
+
+		if (response.ok) {
+			console.log('Logged out successfully');
+			loggedIn = false;
+			toastStore.trigger({
+				message: 'Logout successful!',
+				timeout: 3000,
+				background: 'variant-filled-success'
+			} as ToastSettings);
+		} else {
+			console.error('Failed to log out');
+			toastStore.trigger({
+				message: 'Logout failed!',
+				timeout: 3000,
+				background: 'variant-filled-failure'
+			} as ToastSettings);
+			window.location.reload();
+		}
 	}
 </script>
 
@@ -102,7 +97,7 @@
 		{#if loggedIn}
 			<div class="text-center">
 				<h2 class="text-xl font-semibold">You are logged in!</h2>
-				<button class="btn variant-filled px-6 py-2 mt-4" on:click={() => handleLogout()}>
+				<button class="btn variant-filled px-6 py-2 mt-4" type="button" on:click={handleLogout}>
 					Logout
 				</button>
 			</div>
