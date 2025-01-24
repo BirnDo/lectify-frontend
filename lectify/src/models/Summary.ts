@@ -1,5 +1,5 @@
 export interface Summary {
-	id: number;
+	_id: number;
 	userid: string;
 	title: string;
 	fileName: string;
