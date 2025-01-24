@@ -41,6 +41,7 @@
   "type": "module",
   "dependencies": {
     "@iconify/svelte": "^4.0.2",
+    "dotenv": "^16.4.7",
     "jsonwebtoken": "^9.0.2"
   }
 }
