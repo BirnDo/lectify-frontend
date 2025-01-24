@@ -5,33 +5,21 @@
 		RadioItem,
 		getToastStore,
 		Toast,
-		type ToastSettings
+		type ToastSettings,
+		ProgressRadial
 	} from '@skeletonlabs/skeleton';
 	import { goto } from '$app/navigation';
-	import { onMount } from 'svelte';
 	const API_ENDPOINT = import.meta.env.VITE_API_ENDPOINT;
-
 	const toastStore = getToastStore();
 
+	export let data;
+	console.log(data.token);
 	let loading: boolean = false;
-	let token: any = null;
-
 	let files: File[] = [];
 	let transcriptionQuality: string = 'small';
 	let summaryType: string = 'Brief';
-	const getCookie = (name: string) => {
-		const value = `; ${document.cookie}`;
-		const parts = value.split(`; ${name}=`);
-		if (parts.length === 2) {
-			const part = parts.pop();
-			if (part) return part.split(';').shift();
-		}
-	};
-	onMount(() => {
-		token = getCookie('token');
-	});
+
 	async function handleSubmit(event: Event) {
-		loading = true;
 		event.preventDefault();
 		if (!files || files.length === 0) {
 			const t: ToastSettings = {
@@ -41,8 +29,9 @@
 			};
 			toastStore.trigger(t);
 		} else {
+			loading = true;
 			console.log(files);
-			const response = await fetch(
+			const res = await fetch(
 				API_ENDPOINT +
 					`/process?fileName=${files[0].name}&title=${files[0].name}&model=${transcriptionQuality}&summaryType=${summaryType}`,
 				{
@@ -54,10 +43,20 @@
 					body: await files[0]
 				}
 			);
-			const data = await response.json();
-			console.log(data);
-			loading = false;
-			goto(`/summary/${data._id}`, { replaceState: true });
+			if (res.status == 401) {
+				const t: ToastSettings = {
+					message: 'Please login to convert lectures.',
+					timeout: 3000,
+					background: 'variant-filled-error'
+				};
+				toastStore.trigger(t);
+				loading = false;
+			} else {
+				const data = await res.json();
+				console.log(data);
+				loading = false;
+				goto(`/summary/${data._id}`, { replaceState: true });
+			}
 		}
 	}
 
@@ -74,6 +73,13 @@
 
 <div>
 	<Toast />
+	{#if loading}
+		<div
+			class="fixed inset-0 bg-surface-100/50 backdrop-blur-sm flex items-center justify-center z-50"
+		>
+			<ProgressRadial meter="stroke-surface-900" track="stroke-surface-500/30" width="w-24" />
+		</div>
+	{/if}
 	<form class="w-full space-y-6 p-6" on:submit={handleSubmit}>
 		<h1 class="text-3xl text-center font-semibold">Convert lecture to summary</h1>
 		<FileDropzone
