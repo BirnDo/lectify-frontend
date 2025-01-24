@@ -1,36 +1,45 @@
 import type { Summary } from '../../../models/Summary';
+import { error } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
-const API_ENDPOINT = import.meta.env.VITE_API_ENDPOINT;
 
-export const load: PageLoad = async ({ data, params }) => {
+export const load: PageLoad = async ({ fetch, data, params }) => {
+	const fetchSummary = async () => {
+		console.log('fetching Summary with id: ', params.id);
+		const res = await fetch(`/api/entry?_id=${params.id}`);
+
+		if (res.status === 401) {
+			error(401, {
+				message: 'Please log in to view summaries.'
+			});
+		} else if (res.status === 404) {
+			error(404, {
+				message: 'Summary not found.'
+			});
+		} else if (!res.ok) {
+			throw error(res.status, {
+				message: `Could not load summary: ${res.statusText}`
+			});
+		}
+
+		let summary: Summary = await res.json();
+		summary.transcriptionQuality = mapTranscriptionQuality(summary.transcriptionQuality);
+
+		return summary;
+	};
+
 	const { token } = data;
 	console.log('summary page load');
-	console.log(token);
-	let summary: Summary | null = null;
-	if (token) {
-		summary = await fetchSummary(params.id); // preload if server cookie jwt is present
-		console.log(summary);
-	}
+	console.log('token: ', token);
+
+	let summary: Summary | null = await fetchSummary();
+	let isLoading = true; // Add this line
 	return {
-		id: params.id,
 		token,
 		summary,
-		fetchSummary
+		fetchSummary,
+		isLoading // Add this line
 	};
 };
-
-async function fetchSummary(id: string) {
-	const response = await fetch(API_ENDPOINT + '/entry?_id=' + id, {
-		method: 'GET',
-		credentials: 'include'
-	});
-	const summary: Summary = await response.json();
-
-	console.log('Fetched summary:', summary);
-	summary.transcriptionQuality = mapTranscriptionQuality(summary.transcriptionQuality);
-
-	return summary;
-}
 
 function mapTranscriptionQuality(quality: string): Summary['transcriptionQuality'] {
 	switch (quality) {
