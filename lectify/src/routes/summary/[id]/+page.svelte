@@ -2,65 +2,17 @@
 	import { clipboard, getToastStore, Toast, Modal, getModalStore } from '@skeletonlabs/skeleton';
 	import type { ModalSettings, ToastSettings } from '@skeletonlabs/skeleton';
 	import { onDestroy, onMount } from 'svelte';
-	import type { Summary } from '../../../models/Summary';
-	const API_ENDPOINT = import.meta.env.VITE_API_ENDPOINT;
+	export let data;
 
 	const toastStore = getToastStore();
 	const modalStore = getModalStore();
 
-	export let data;
 	let interval: NodeJS.Timeout;
-	let token: any = null;
-
-	const getCookie = (name: string) => {
-		const value = `; ${document.cookie}`;
-		const parts = value.split(`; ${name}=`);
-		if (parts.length === 2) {
-			const part = parts.pop();
-			if (part) return part.split(';').shift();
-		}
-	};
-	onMount(() => {
-		token = getCookie('token');
-	});
-
-	function mapTranscriptionQuality(quality: string): string {
-		switch (quality) {
-			case 'tiny':
-				return 'Basic';
-			case 'small':
-				return 'Standard';
-			case 'large':
-				return 'High';
-			default:
-				return 'Unknown';
-		}
-	}
-	async function fetchSummary() {
-		try {
-			const response = await fetch(API_ENDPOINT + '/entry?_id=' + data.id, {
-				method: 'GET',
-				headers: {
-					Authorization: `Bearer ${token}`
-				}
-			});
-			const summary: Summary = await response.json();
-
-			console.log('Fetched summary:', summary);
-			summary.transcriptionQuality = mapTranscriptionQuality(summary.transcriptionQuality);
-
-			return summary;
-		} catch (error) {
-			console.error('Failed to fetch summary:', error);
-			return null;
-		}
-	}
 
 	onMount(async () => {
-		data.summary = await fetchSummary();
 		if (!data.summary?.completed) {
 			interval = setInterval(async () => {
-				const updatedSummary = await fetchSummary();
+				const updatedSummary = await data.fetchSummary(data.id);
 				if (updatedSummary?.completed) {
 					data.summary = updatedSummary;
 					clearInterval(interval);
@@ -139,7 +91,7 @@
 						<span class="break-all">{data.summary.fileName}</span>{/if}
 				</h1>
 				<p class="text-gray-600 break-all">
-					{data.summary.fileName} • {formatDuration(data.summary.duration)}
+					{data.summary.fileName} • {formatDuration(Number.parseFloat(data.summary.duration))}
 				</p>
 				<p class="text-gray-500 text-sm">
 					Created on {new Date(data.summary.createdAt).toLocaleDateString()}

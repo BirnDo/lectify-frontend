@@ -48,9 +48,9 @@
 				{
 					method: 'POST',
 					headers: {
-						'Content-Type': 'bi',
-						Authorization: `Bearer ${token}`
+						'Content-Type': 'bi'
 					},
+					credentials: 'include',
 					body: await files[0]
 				}
 			);
@@ -76,7 +76,6 @@
 	<Toast />
 	<form class="w-full space-y-6 p-6" on:submit={handleSubmit}>
 		<h1 class="text-3xl text-center font-semibold">Convert lecture to summary</h1>
-		<p>This was now added</p>
 		<FileDropzone
 			class="w-full mx-auto max-w-xl sm:h-32"
 			name="files"
