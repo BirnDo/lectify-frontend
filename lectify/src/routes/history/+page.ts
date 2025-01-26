@@ -12,10 +12,19 @@ export const load: PageLoad = async ({ fetch, data }) => {
 		});
 	}
 	const token = data.token;
-	let summaries: Summary[] = (await res.json()).map((summary: Summary) => ({
-		...summary,
-		transcriptionQuality: mapTranscriptionQuality(summary.transcriptionQuality)
-	}));
+	let summaries: Summary[] = (await res.json())
+		.map((summary: Summary) => ({
+			...summary,
+			transcriptionQuality: mapTranscriptionQuality(summary.transcriptionQuality)
+		}))
+		.sort((a: Summary, b: Summary) => {
+			// First sort by completion status (incomplete first)
+			if (a.completed !== b.completed) {
+				return a.completed ? 1 : -1;
+			}
+			// Then sort by date (newest first) within each group
+			return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+		});
 
 	if (summaries.length === 0) error(404, 'No history for your account found.');
 

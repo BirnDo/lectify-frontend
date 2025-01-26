@@ -1,3 +1,3 @@
-<div class="container mx-auto p-6 flex flex-col">
+<div class="p-6 sm:px-12 md:px-24 flex justify-center">
 	<slot />
 </div>
