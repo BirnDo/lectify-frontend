@@ -2,6 +2,8 @@
 	import { clipboard, getModalStore, getToastStore } from '@skeletonlabs/skeleton';
 	import type { ModalSettings, ToastSettings } from '@skeletonlabs/skeleton';
 	import type { Summary } from '../models/Summary';
+	import { goto } from '$app/navigation';
+
 	export let summary: Summary;
 	export let minimal: boolean;
 	const modalStore = getModalStore();
@@ -30,7 +32,7 @@
 			title: 'Transcription',
 			buttonTextConfirm: 'Copy to Clipboard',
 			body: summary?.transcriptionText,
-			backdropClasses: '',
+			modalClasses: 'p-8',
 			response: (r: boolean) => {
 				if (r) {
 					navigator.clipboard.writeText(summary?.transcriptionText || '');
@@ -40,11 +42,62 @@
 		};
 		modalStore.trigger(m);
 	}
+	async function handleDelete() {
+		const m: ModalSettings = {
+			type: 'confirm',
+			title: 'Delete Summary',
+			body: 'Are you sure you want to delete this summary? This action cannot be undone.',
+			buttonTextConfirm: 'Delete',
+			buttonTextCancel: 'Cancel',
+			modalClasses: 'p-8',
+			response: async (r: boolean) => {
+				if (r) {
+					const res = await fetch(`/api/delete/${summary._id}`, {
+						method: 'DELETE',
+						credentials: 'include'
+					});
+					if (res.ok) {
+						toastStore.trigger({
+							message: 'Summary deleted successfully',
+							background: 'variant-filled-success'
+						});
+						goto('/history', { replaceState: true });
+					} else {
+						toastStore.trigger({
+							message: 'Failed to delete summary',
+							background: 'variant-filled-error'
+						});
+					}
+				}
+			}
+		};
+		modalStore.trigger(m);
+	}
 </script>
 
 <div
-	class="p-6 max-w-4xl bg-white dark:bg-surface-800 shadow-lg rounded-lg overflow-hidden flex flex-col"
+	class="p-6 max-w-4xl bg-white dark:bg-surface-800 shadow-lg rounded-lg overflow-hidden flex flex-col relative"
 >
+	<button
+		on:click={handleDelete}
+		class="absolute top-2 right-2 p-2 text-error-500 hover:text-error-700 transition-colors"
+		aria-label="Delete summary"
+	>
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			class="h-5 w-5"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+		>
+			<path
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				stroke-width="2"
+				d="M6 18L18 6M6 6l12 12"
+			/>
+		</svg>
+	</button>
 	<!-- Header -->
 	<header class="">
 		<div class="flex items-center mb-4">
@@ -63,11 +116,19 @@
 		<h1 class="text-2xl font-semibold">
 			{summary.title}
 		</h1>
-		<p class="text-gray-600 break-all">
+		<p class="text-surface-500-400-token break-all">
 			{summary.fileName} • {formatDuration(Number.parseFloat(summary.duration))}
 		</p>
-		<p class="text-gray-500 text-sm">
-			Created on {new Date(summary.createdAt).toLocaleDateString()}
+		<p class="text-surface-400 text-sm">
+			Created on {new Date(summary.createdAt)
+				.toLocaleString('de-DE', {
+					day: '2-digit',
+					month: '2-digit',
+					year: 'numeric',
+					hour: '2-digit',
+					minute: '2-digit'
+				})
+				.replace(',', ' at	')}
 		</p>
 		<div class="mt-4 flex-1">
 			<span class="inline-block bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full mr-2">

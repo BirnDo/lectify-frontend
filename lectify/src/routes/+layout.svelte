@@ -1,6 +1,6 @@
 <script lang="ts">
 	import '../app.postcss';
-	import { AppBar, initializeStores, LightSwitch } from '@skeletonlabs/skeleton';
+	import { AppBar, initializeStores, LightSwitch, Modal, Toast } from '@skeletonlabs/skeleton';
 
 	initializeStores();
 </script>
@@ -25,3 +25,5 @@
 	</svelte:fragment>
 </AppBar>
 <slot />
+<Toast />
+<Modal />

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Summary from '$lib/Summary.svelte';
-
 	export let data;
 </script>
 

@@ -1,12 +1,5 @@
 <script lang="ts">
-	import {
-		clipboard,
-		getToastStore,
-		Toast,
-		Modal,
-		getModalStore,
-		ProgressRadial
-	} from '@skeletonlabs/skeleton';
+	import { getToastStore, ProgressRadial } from '@skeletonlabs/skeleton';
 	import { onDestroy, onMount } from 'svelte';
 	import Summary from '$lib/Summary.svelte';
 
@@ -113,5 +106,3 @@
 	</div>
 {/if}
 <Summary summary={data.summary} minimal={false} />
-<Toast />
-<Modal />

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getToastStore, Toast, type ToastSettings } from '@skeletonlabs/skeleton';
+	import { getToastStore, type ToastSettings } from '@skeletonlabs/skeleton';
 	const API_ENDPOINT = import.meta.env.VITE_API_ENDPOINT;
 	export let data;
 
@@ -136,6 +136,4 @@
 			</div>
 		{/if}
 	</form>
-
-	<Toast />
 </div>
