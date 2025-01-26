@@ -12,8 +12,7 @@
 	const API_ENDPOINT = import.meta.env.VITE_API_ENDPOINT;
 	const toastStore = getToastStore();
 
-	export let data;
-	console.log(data.token);
+	let title: string = '';
 	let loading: boolean = false;
 	let files: File[] = [];
 	let transcriptionQuality: string = 'small';
@@ -33,7 +32,7 @@
 			console.log(files);
 			const res = await fetch(
 				API_ENDPOINT +
-					`/process?fileName=${files[0].name}&title=${files[0].name}&model=${transcriptionQuality}&summaryType=${summaryType}`,
+					`/process?fileName=${files[0].name}&title=${title}&model=${transcriptionQuality}&summaryType=${summaryType}`,
 				{
 					method: 'POST',
 					headers: {
@@ -83,7 +82,7 @@
 	<form class="w-full space-y-6 p-6" on:submit={handleSubmit}>
 		<h1 class="text-3xl text-center font-semibold">Convert lecture to summary</h1>
 		<FileDropzone
-			class="w-full mx-auto max-w-xl sm:h-32"
+			class="w-full mx-auto max-w-xl sm:h-32 "
 			name="files"
 			on:change={handleAddFiles}
 			accept="audio/*,video/*"
@@ -120,7 +119,15 @@
 				{/each}
 			</div>
 		{/if}
-
+		<label class="flex flex-col items-center space-y-2">
+			<span class="font-semibold">Title</span>
+			<input
+				type="text"
+				class="input w-60 sm:w-72 text-center"
+				placeholder="Enter a title for your summary"
+				bind:value={title}
+			/>
+		</label>
 		<fieldset class="space-y-2 flex">
 			<legend class="text-center font-semibold">Transcription Quality</legend>
 			<RadioGroup class="mx-auto w-80">
@@ -134,7 +141,7 @@
 
 		<fieldset class="space-y-2 flex">
 			<legend class="text-center font-semibold">Summary Type</legend>
-			<RadioGroup class="mx-auto w-80">
+			<RadioGroup class="mx-auto w-80 ">
 				<RadioItem bind:group={summaryType} name="summary" value={'Brief'}>Brief</RadioItem>
 				<RadioItem default bind:group={summaryType} name="summary" value={'Detailed'}
 					>Detailed</RadioItem

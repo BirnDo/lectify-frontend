@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getToastStore, Toast, type ToastSettings } from '@skeletonlabs/skeleton';
+	import { getToastStore, type ToastSettings } from '@skeletonlabs/skeleton';
 	const API_ENDPOINT = import.meta.env.VITE_API_ENDPOINT;
 	export let data;
 
@@ -93,7 +93,10 @@
 
 <div class="container mx-auto p-6 space-y-6">
 	<h1 class="text-3xl text-center font-semibold">Account</h1>
-	<form class="bg-white shadow-lg rounded-lg mx-auto p-6 space-y-6 w-fit" on:submit={handleLogin}>
+	<form
+		class="bg-white dark:bg-surface-800 shadow-lg rounded-lg mx-auto p-6 space-y-6 w-fit"
+		on:submit={handleLogin}
+	>
 		{#if loggedIn}
 			<div class="text-center">
 				<h2 class="text-xl font-semibold">You are logged in!</h2>
@@ -103,9 +106,9 @@
 			</div>
 		{:else}
 			<label class="flex flex-col items-center">
-				<span class="mb-2 text-gray-700">Username</span>
+				<span class="mb-2">Username</span>
 				<input
-					class="input p-2 pl-4 w-60 sm:w-72 text-center"
+					class="input w-60 sm:w-72 text-center"
 					type="text"
 					bind:value={username}
 					placeholder="Enter your username"
@@ -113,9 +116,9 @@
 			</label>
 
 			<label class="flex flex-col items-center">
-				<span class="mb-2 text-gray-700">Password</span>
+				<span class="mb-2">Password</span>
 				<input
-					class="input p-2 pl-4 w-60 sm:w-72 text-center"
+					class="input w-60 sm:w-72 text-center"
 					type="password"
 					bind:value={password}
 					placeholder="Enter your password"
@@ -133,6 +136,4 @@
 			</div>
 		{/if}
 	</form>
-
-	<Toast />
 </div>
