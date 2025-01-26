@@ -18,11 +18,9 @@ export const load: PageLoad = async ({ fetch, data }) => {
 			transcriptionQuality: mapTranscriptionQuality(summary.transcriptionQuality)
 		}))
 		.sort((a: Summary, b: Summary) => {
-			// First sort by completion status (incomplete first)
 			if (a.completed !== b.completed) {
 				return a.completed ? 1 : -1;
 			}
-			// Then sort by date (newest first) within each group
 			return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
 		});
 
