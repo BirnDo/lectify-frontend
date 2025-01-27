@@ -4,7 +4,7 @@
 </script>
 
 {#if data.summaries && data.summaries.length > 0}
-	<div class="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+	<div class="grid gap-8 grid-cols-[repeat(auto-fill,minmax(330px,1fr))]">
 		{#each data.summaries as summary}
 			<Summary {summary} minimal={true} />
 		{/each}
