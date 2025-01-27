@@ -27,19 +27,30 @@
 				background: 'variant-filled-error'
 			};
 			toastStore.trigger(t);
+		} else if (!title) {
+			const t: ToastSettings = {
+				message: 'Please enter a title before submitting.',
+				timeout: 3000,
+				background: 'variant-filled-error'
+			};
+			toastStore.trigger(t);
 		} else {
 			loading = true;
 			console.log(files);
+
+			const formdata = new FormData();
+			files.forEach((file) => {
+				formdata.append('files', file, file.name);
+			});
+
 			const res = await fetch(
 				API_ENDPOINT +
 					`/process?fileName=${files[0].name}&title=${title}&model=${transcriptionQuality}&summaryType=${summaryType}`,
 				{
 					method: 'POST',
-					headers: {
-						'Content-Type': 'bi'
-					},
+
 					credentials: 'include',
-					body: await files[0]
+					body: formdata
 				}
 			);
 			if (res.status == 401) {
@@ -51,27 +62,55 @@
 				toastStore.trigger(t);
 				loading = false;
 			} else {
-				const data = await res.json();
-				console.log(data);
+				type ProcessResponse = {
+					ids: string[];
+				};
+				const data: ProcessResponse = await res.json();
 				loading = false;
-				goto(`/summary/${data._id}`, { replaceState: true });
+				if (data.ids.length === 1) goto(`/summary/${data.ids[0]}`, { replaceState: true });
+				else goto(`/history`, { replaceState: true });
 			}
 		}
 	}
 
 	function removeFile(index: number) {
 		files = files.filter((_, i) => i !== index);
+		// Reset the FileDropzone input
+		const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+		if (fileInput) fileInput.value = '';
 	}
 
 	function handleAddFiles(event: Event) {
 		const input = event.target as HTMLInputElement;
 		const newFiles = input.files;
-		if (newFiles) files = [...files, ...Array.from(newFiles)];
+
+		if (newFiles) {
+			const duplicates: string[] = [];
+			const uniqueFiles = Array.from(newFiles).filter((newFile) => {
+				const isDuplicate = files.some(
+					(existingFile) => existingFile.name === newFile.name && existingFile.size == newFile.size
+				);
+				if (isDuplicate) {
+					duplicates.push(newFile.name);
+				}
+				return !isDuplicate;
+			});
+
+			if (duplicates.length > 0) {
+				toastStore.trigger({
+					message: `${duplicates.join(', ')} already added`,
+					background: 'variant-soft-warning'
+				});
+			}
+
+			files = [...files, ...uniqueFiles];
+			// Reset input to allow re-adding same file
+			input.value = '';
+		}
 	}
 </script>
 
 <div>
-	<Toast />
 	{#if loading}
 		<div
 			class="fixed inset-0 bg-surface-100/50 backdrop-blur-sm flex items-center justify-center z-50"
@@ -79,7 +118,7 @@
 			<ProgressRadial meter="stroke-surface-900" track="stroke-surface-500/30" width="w-24" />
 		</div>
 	{/if}
-	<form class="w-full space-y-6 p-6" on:submit={handleSubmit}>
+	<form class="flex flex-col items-center w-full space-y-6 p-6" on:submit={handleSubmit}>
 		<h1 class="text-3xl text-center font-semibold">Convert lecture to summary</h1>
 		<FileDropzone
 			class="w-full mx-auto max-w-xl sm:h-32 "
@@ -102,13 +141,17 @@
 			<div class="flex flex-wrap justify-center items-center gap-4">
 				{#each files as file, i}
 					<div
-						class="flex items-center bg-surface-200 p-2 pl-5 rounded-3xl break-all border border-surface-400"
+						class="flex items-center btn variant-soft-surface py-1 active:transform-none active:brightness-110"
 					>
-						<p class="text-center flex-1">{file.name}</p>
+						<p class="text-center flex-1">
+							{file.name.length > 30
+								? `${file.name.slice(0, 19)}...${file.name.slice(file.name.lastIndexOf('.') - 3)}`
+								: file.name}
+						</p>
 						<button
 							type="button"
 							on:click={() => removeFile(i)}
-							class="ml-2 text-gray-500 hover:text-gray-700 focus:outline-none"
+							class="ml-2 focus:outline-none"
 							aria-label="Remove file"
 						>
 							<!-- X Icon -->
@@ -123,14 +166,14 @@
 			<span class="font-semibold">Title</span>
 			<input
 				type="text"
-				class="input w-60 sm:w-72 text-center"
+				class="input w-80 text-center"
 				placeholder="Enter a title for your summary"
 				bind:value={title}
 			/>
 		</label>
-		<fieldset class="space-y-2 flex">
-			<legend class="text-center font-semibold">Transcription Quality</legend>
-			<RadioGroup class="mx-auto w-80">
+		<fieldset class="flex flex-col items-center space-y-2">
+			<div><legend class="font-semibold">Transcription Quality</legend></div>
+			<RadioGroup class="w-80">
 				<RadioItem bind:group={transcriptionQuality} name="quality" value={'tiny'}>Basic</RadioItem>
 				<RadioItem default bind:group={transcriptionQuality} name="quality" value={'small'}
 					>Standard</RadioItem
@@ -139,9 +182,9 @@
 			</RadioGroup>
 		</fieldset>
 
-		<fieldset class="space-y-2 flex">
-			<legend class="text-center font-semibold">Summary Type</legend>
-			<RadioGroup class="mx-auto w-80 ">
+		<fieldset class="flex flex-col items-center space-y-2">
+			<div><legend class="font-semibold">Summary Type</legend></div>
+			<RadioGroup class="w-80 ">
 				<RadioItem bind:group={summaryType} name="summary" value={'Brief'}>Brief</RadioItem>
 				<RadioItem default bind:group={summaryType} name="summary" value={'Detailed'}
 					>Detailed</RadioItem
@@ -151,8 +194,6 @@
 				>
 			</RadioGroup>
 		</fieldset>
-		<div class="flex">
-			<button type="submit" class="btn variant-filled mt-2 m-auto">Convert</button>
-		</div>
+		<button type="submit" class="btn variant-filled">Convert</button>
 	</form>
 </div>

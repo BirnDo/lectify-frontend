@@ -9,7 +9,7 @@ export const load: PageLoad = async ({ fetch, data, params }) => {
 
 		if (res.status === 401) {
 			error(401, {
-				message: 'Please log in to view summaries.'
+				message: 'This summary is not public.'
 			});
 		} else if (res.status === 404) {
 			error(404, {

@@ -58,16 +58,16 @@
 
 	onMount(async () => {
 		if (!data.summary?.completed) {
-			await requestNotificationPermission();
+			requestNotificationPermission();
 			interval = setInterval(async () => {
 				try {
 					loading = true;
 					const updatedSummary = await data.fetchSummary();
 					loading = false;
-
 					if (updatedSummary?.completed && !data.summary?.completed) {
 						data.summary = updatedSummary;
 						clearInterval(interval);
+						toastStore.clear();
 						if (Notification.permission === 'granted') {
 							try {
 								const notification = new Notification('Summary Ready!', {

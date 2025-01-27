@@ -10,4 +10,5 @@ export interface Summary {
 	completed: boolean;
 	summaryText: string;
 	transcriptionText: string;
+	isPublic?: boolean;
 }
