@@ -10,13 +10,6 @@ export default {
 		'./src/**/*.{html,js,svelte,ts}',
 		join(require.resolve('@skeletonlabs/skeleton'), '../**/*.{html,js,svelte,ts}')
 	],
-	theme: {
-		extend: {
-			screens: {
-				'xs': '400px'
-			}
-		}
-	},
 	plugins: [
 		forms,
 		skeleton({
@@ -25,6 +18,5 @@ export default {
 				custom: [myCustomTheme]
 			}
 		})
-	],
-	darkMode: 'selector'
+	]
 } satisfies Config;

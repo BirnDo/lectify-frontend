@@ -2,6 +2,8 @@
 	import { clipboard, getModalStore, getToastStore } from '@skeletonlabs/skeleton';
 	import type { ModalSettings, ToastSettings } from '@skeletonlabs/skeleton';
 	import type { Summary } from '../models/Summary';
+	import { goto, invalidateAll } from '$app/navigation';
+	import { page } from '$app/stores';
 	const API_ENDPOINT = import.meta.env.VITE_API_ENDPOINT;
 
 	export let summary: Summary;
@@ -9,6 +11,7 @@
 	const modalStore = getModalStore();
 	const toastStore = getToastStore();
 	console.log(summary);
+
 	function formatDuration(seconds: number): string {
 		const minutes = Math.floor(seconds / 60);
 		const remainingSeconds = Math.floor(seconds % 60);
@@ -18,6 +21,7 @@
 			return `${remainingSeconds}s`;
 		}
 	}
+
 	function showCopyToast(message: string) {
 		const t: ToastSettings = {
 			message: message,
@@ -26,6 +30,7 @@
 		};
 		toastStore.trigger(t);
 	}
+
 	function handleModal() {
 		const m: ModalSettings = {
 			type: 'confirm',
@@ -42,6 +47,7 @@
 		};
 		modalStore.trigger(m);
 	}
+
 	async function handleDelete() {
 		const m: ModalSettings = {
 			type: 'confirm',
@@ -63,7 +69,8 @@
 								message: 'Summary deleted successfully',
 								background: 'variant-filled-success'
 							});
-							window.location.href = '/history';
+							await invalidateAll();
+							if ($page.url.pathname !== '/history') goto('/history');
 						} else {
 							toastStore.trigger({
 								message: 'Failed to delete summary',
@@ -172,7 +179,7 @@
 	</div>
 	<!-- summary information text-->
 	<div class="mt-2 px-1">
-		<h1 class="text-2xl font-semibold break-all">
+		<h1 class="text-2xl font-semibold">
 			{summary.title}
 		</h1>
 		<p class="text-surface-500-400-token">
@@ -194,11 +201,11 @@
 		</p>
 	</div>
 	<!-- summary information quality, type-->
-	<div class="flex-1 mt-4 {summary.completed ? 'mb-6' : ''}">
-		<span class="inline-block bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full mr-2">
+	<div class="flex flex-wrap mt-4 gap-2 {summary.completed || minimal ? 'mb-6' : ''}">
+		<span class="inline-block bg-blue-100 text-blue-800 text-xs px-4 py-1 rounded-full">
 			Transcription: {summary.transcriptionQuality}
 		</span>
-		<span class="inline-block bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full">
+		<span class="inline-block bg-purple-100 text-purple-800 text-xs px-4 py-1 rounded-full">
 			Summary: {summary.summaryType}
 		</span>
 	</div>
@@ -219,7 +226,7 @@
 	{:else if summary.completed}
 		<main class="flex-1 relative mb-6">
 			<p class="px-1">{summary.summaryText}</p>
-			<div class="absolute -bottom-4 -right-4">
+			<div class="absolute -bottom-8 -right-4">
 				<button
 					use:clipboard={summary.summaryText}
 					on:click={() => showCopyToast('Summary copied to clipboard!')}
