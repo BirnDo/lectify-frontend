@@ -1,0 +1,78 @@
+name: Deploy to Kubernetes
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+jobs:
+  test:
+    defaults:
+      run:
+        working-directory: ./lectify
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    - name: Install dependencies
+      run: npm ci
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+    - name: build
+      run: npm run build
+    - name: run server
+      run: npm run preview &
+    - name: Run Playwright tests
+      run: npx playwright test
+    - uses: actions/upload-artifact@v4
+      if: ${{ !cancelled() }}
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 30
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+    # Set env vars
+    - name: Set env vars
+      id: env-vars
+      run: |
+        if [ "${{ github.ref_name }}" == "main" ]; then
+          echo "NAMESPACE=prod" >> $GITHUB_ENV
+          echo "IMAGE=lectify-frontend-prod:${{ github.sha }}" >> $GITHUB_ENV
+        elif [ "${{ github.ref_name }}" == "develop" ]; then
+          echo "NAMESPACE=dev" >> $GITHUB_ENV
+          echo "IMAGE=lectify-frontend-dev:${{ github.sha }}" >> $GITHUB_ENV
+        fi
+
+    # Checkout the repository
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    # Log in to ACR
+    - name: Log in to ACR
+      uses: azure/docker-login@v1
+      with:
+        login-server: lectifycr.azurecr.io
+        username: ${{ secrets.LECTIFYFRONTEND_REGISTRY_USERNAME }}
+        password: ${{ secrets.LECTIFYFRONTEND_REGISTRY_PASSWORD }}
+
+    # Build and push image
+    - name: Build and Push Docker Image
+      run: |
+        docker build -t lectifycr.azurecr.io/$IMAGE .
+        docker push lectifycr.azurecr.io/$IMAGE
+
+    # create deployment
+    - uses: actions-hub/kubectl@master
+      env:
+        KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+      with: 
+        args: set image deployment/lectify-frontend lectify-frontend=lectifycr.azurecr.io/${{ env.IMAGE }} -n ${{ env.NAMESPACE }}

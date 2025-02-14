@@ -1,0 +1,16 @@
+{
+	"name": "Lectify - Lecture Summarizer",
+	"short_name": "Lectify",
+	"theme_color": "#d5d5d9",
+	"background_color": "#DFE0E2",
+	"display": "standalone",
+	"scope": "/",
+	"start_url": "/",
+	"icons": [
+		{
+			"src": "favicon.png",
+			"sizes": "512x512",
+			"type": "image/png"
+		}
+	]
+}

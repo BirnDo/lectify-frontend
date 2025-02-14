@@ -1,5 +1,5 @@
 export interface Summary {
-	id: number;
+	_id: number;
 	userid: string;
 	title: string;
 	fileName: string;
@@ -10,4 +10,5 @@ export interface Summary {
 	completed: boolean;
 	summaryText: string;
 	transcriptionText: string;
+	isPublic?: boolean;
 }

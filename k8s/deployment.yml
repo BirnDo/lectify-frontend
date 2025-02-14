@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lectify-frontend
+  labels:
+    app: lectify
+    use: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: lectify
+      use: frontend
+  strategy: 
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: 1
+          maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: lectify
+        use: frontend
+    spec:
+      containers:
+        - name: lectify-frontend
+          image: lectifycr.azurecr.io/lectify-frontend-dev:b52115630eab176ee703a7f53eaf9478c5324c8f
+          ports:
+            - containerPort: 4173
+          securityContext:
+            runAsUser: 1000
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "125m"
+            limits:
+              memory: "1Gi"
+              cpu: "250m"
+          readinessProbe:
+            exec:
+              command:
+              - curl
+              - http://localhost:4173
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          env:
+            - name: VITE_API_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: frontend-secrets
+                  key: api-endpoint
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: lectify-frontend-service
+spec:
+  selector:
+    app: lectify
+    use: frontend
+  ports:
+    - port: 80
+      targetPort: 4173
+  type: LoadBalancer
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: frontend-secrets
+data:
+  api-endpoint: changeme
