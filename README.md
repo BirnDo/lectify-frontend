@@ -19,7 +19,7 @@ A modern web application for generating summaries from lecture recordings. This 
 ### Prerequisites
 
 - Node.js (v18 or higher)
-- [Lectify Backend](https://github.com/lukaswerner/lectify-backend) running
+- [Lectify Backend](https://github.com/lectify/lectify-backend) running
 - npm or pnpm
 
 ### Installation
